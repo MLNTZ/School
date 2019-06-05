@@ -1,0 +1,3 @@
+This program solves a quadratic equation using the quadratic formula.
+For the form ax^2 + bx + c = 0 please enter the following:
+a=b=c=The discriminant is negative. There are no real roots.

@@ -1,0 +1,4 @@
+This program solves a quadratic equation using the quadratic formula.
+For the form ax^2 + bx + c = 0 please enter the following:
+a=b=c=The positive root is 1.000000
+The negative root is -1.000000
