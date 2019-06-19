@@ -2,6 +2,66 @@ package util;
 
 public class Tree<E> {
 	Tnode root;
+	Tnode visit;
+	int size;
+	
+	/**
+	 * will create a tree with a root that holds the given object
+	 * @param obj
+	 */
+	Tree(E obj){
+		root = new Tnode(obj);
+		size = 1;
+	}
+	
+	
+
+	
+	/**
+	 * will look up and return the node of the tree that holds the given object
+	 * uses preorder traversal
+	 * @param obj
+	 * @return the Tnode containing the given object
+	 * 			null if it is not found
+	 */
+	Tnode lookup(Tnode root, E obj){
+		Tnode temp = root;
+		if (temp.data.equals(obj)) {
+			return temp;
+		}
+		LinkedList<Tnode> children = temp.getChildren();
+		for (int i = 0; i < children.size(); i++) {
+			lookup(children.get(i), obj);
+		}
+		return null;
+		
+	}
+	
+	
+	String preOrder() {
+		String trav = root.data.toString();
+		trav = preOrder(root, trav);
+		return trav;
+		
+	}
+	
+	String preOrder(Tnode root, String trav) {
+		Tnode temp = root;
+		trav += temp.data.toString();
+		LinkedList<Tnode> children = temp.getChildren();
+		for (int i = 0; i < children.size(); i++) {
+			preOrder(children.get(i), trav);
+		}
+		return trav;
+	}
+	
+	
+	addChild(E root, E obj){
+		
+	}
+	
+	
+
 	
 	
 	
