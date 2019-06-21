@@ -3,7 +3,6 @@
 public class MyTree<E> {
 	Tnode<E> top;
 	Tnode<E> visit;
-	int size;
 	
 	/**
 	 * will create a tree with a root that holds the given object
@@ -11,7 +10,11 @@ public class MyTree<E> {
 	 */
 	MyTree(E obj){
 		top = new Tnode<E>(obj);
-		size = 1;
+
+	}
+	MyTree(){
+		top = null;
+
 	}
 	
 	Tnode<E> lookup(E obj) {
@@ -46,6 +49,75 @@ public class MyTree<E> {
 		return null;
 		
 	}
+	/**
+	 * will get the height difference of the nodes that hold the given objects
+	 * @param a
+	 * @param b
+	 * @return 
+	 */
+	 int heightDif(E a, E b) {
+		 int dist = getHeight(a) - getHeight(b);
+		
+		 return dist > 0? dist : 0 - dist;
+	}
+	
+	/**
+	 * will ad the given object after the node that holds the given key
+	 * @param key
+	 * @param obj
+	 */
+	void addChild(E obj, E key) {
+		Tnode<E> parent = lookup(key);
+		parent.addChild(obj);
+	}
+	/**
+	 * will add the given node as a child of the given root node
+	 * @param root
+	 * @param node
+	 */
+	void addChildNode(Tnode<E> root, Tnode<E> node) {
+		node.parent = root;
+		root.getChildren().add(node);
+	}
+	
+	/**
+	 * will return the root of this tree "top"
+	 * @return top
+	 */
+	Tnode<E> getRoot() {
+		return top;
+	}
+	/**
+	 * will set the root of this tree to the given object
+	 * @param root
+	 */
+	void setRoot(Tnode<E> root) {
+		this.top = root;
+	}
+	
+	
+	/**
+	 * will return a reference to a newly created node, with no children or parent
+	 * @param obj
+	 * @return
+	 */
+	Tnode<E> makeNode(E obj){
+		return new Tnode<E>(obj);
+	}
+	/**
+	 * will return the height of the node that holds the given object
+	 * @param obj
+	 * @return
+	 */
+	int getHeight(E obj) {
+		Tnode<E> temp = lookup(obj);
+		int height = 0;
+		while(temp.getParent() != null) {
+			height++;
+			temp = temp.getParent();
+		}
+		return height;
+	}
 	
 	/**
 	 * will return a string representation of the preorder traversal for testing
@@ -72,6 +144,41 @@ public class MyTree<E> {
 			trav = preOrder(children.get(i), trav);
 		}
 		return trav;
+	}
+	
+	public void markAnsestors(E obj) {
+		Tnode<E> temp = lookup(obj) ;
+		if (temp == null) {
+			throw new IllegalArgumentException("element does not exist");
+		}
+		temp.markAncestors();
+		
+	}
+	
+	public void unmarkAnsestors(E obj) {
+		Tnode<E> temp = lookup(obj) ;
+		if (temp == null) {
+			throw new IllegalArgumentException("element does not exist");
+		}
+		temp.unmarkAncestors();
+		
+	}
+	
+	public E getFirstCommonMarked(E obj) {
+		Tnode<E> temp = lookup(obj);
+		if (temp == null) {
+			return null;
+		}
+		if (temp.isMarked) {
+			return obj;
+		}
+		while(temp.parent != null) {
+			if(temp.parent.isMarked) {
+				return temp.parent.data;
+			}
+			temp = temp.parent;
+		}
+		return null;
 	}
 	/**
 	 * will return a string representation of the post order traversal of this tree
@@ -100,46 +207,6 @@ public class MyTree<E> {
 		return trav;
 	}
 	
-	/**
-	 * will ad the given object after the node that holds the given key
-	 * @param key
-	 * @param obj
-	 */
-	void addChild(E obj, E key) {
-		Tnode<E> parent = lookup(key);
-		parent.addChild(obj);
-		size++;
-	}
-	
-	void addChildNode(Tnode<E> root, Tnode<E> node) {
-		root.getChildren().add(node);
-	}
-	
-	
-	Tnode<E> getRoot() {
-		return top;
-	}
-	
-	
-	
-	Tnode<E> makeNode(E obj){
-		return new Tnode<E>(obj);
-	}
-	/**
-	 * will return the height of the node that holds the given object
-	 * @param obj
-	 * @return
-	 */
-	int getHeight(E obj) {
-		Tnode<E> temp = lookup(obj);
-		int height = 0;
-		while(temp.getParent() != null) {
-			height++;
-			temp = temp.getParent();
-		}
-		return height;
-	}
-	
 	
 	
 
@@ -151,6 +218,7 @@ public class MyTree<E> {
  class Tnode<E>{
 	Tnode<E> parent;
 	LinkedList<Tnode<E>> child;
+	boolean isMarked;
 	E data;
 	/**
 	 * create a new node with given parent, holding the given data
@@ -161,6 +229,7 @@ public class MyTree<E> {
 		this.parent = parent;
 		this.child = new LinkedList<>();
 		this.data = data;
+		isMarked = false;
 	}
 	/**
 	 * create new node with no parent and no children
@@ -170,15 +239,13 @@ public class MyTree<E> {
 		this.parent = null;
 		this.child = new LinkedList<>();
 		this.data = data;
+		isMarked = false;
 	}
 	/**
 	 * returns the list of children of this node
 	 * @return
 	 */
 	LinkedList<Tnode<E>> getChildren(){
-		if (child.size() == 0) {
-			return null;
-		}
 		return child;
 	}
 	/**
@@ -214,7 +281,21 @@ public class MyTree<E> {
 	public String toString() {
 		return data.toString();
 	}
-	
+	public void markAncestors() {
+		isMarked = true;
+		if (this.parent == null) {
+			return;
+		}
+		parent.markAncestors();
+		
+	}
+	public void unmarkAncestors() {
+		isMarked = false;
+		if (this.parent == null) {
+			return;
+		}
+		parent.unmarkAncestors();
+	}
 }
 
 

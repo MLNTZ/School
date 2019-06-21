@@ -1,4 +1,6 @@
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -67,6 +69,33 @@ public class MyTreeTest {
 		assertEquals(2, tree.lookup("D").getNumChild());
 		assertEquals(4, tree.lookup("B").getNumChild());
 		assertEquals(2, tree.lookup("T").getNumChild());
+		
+		
+		
+		assertEquals(1, tree.heightDif("G", "B"));
+		assertEquals(2, tree.heightDif("Z", "H"));
+		assertEquals(3, tree.heightDif("P", "D"));
+		
+		
+		tree.markAnsestors("W");
+		assertTrue(tree.lookup("W").isMarked);
+		assertTrue(tree.lookup("B").isMarked);
+		assertTrue(tree.lookup("H").isMarked);
+		assertTrue(tree.lookup("D").isMarked);
+		
+		assertEquals(0, tree.heightDif("D", "D"));
+		
+		assertEquals("H", tree.getFirstCommonMarked("Z"));
+		assertEquals("B", tree.getFirstCommonMarked("F"));
+		assertEquals("B", tree.getFirstCommonMarked("B"));
+		assertEquals(null, tree.getFirstCommonMarked("_"));
+		assertEquals("D", tree.getFirstCommonMarked("N"));
+		
+		tree.unmarkAnsestors("W");
+		assertFalse(tree.lookup("W").isMarked);
+		assertFalse(tree.lookup("B").isMarked);
+		assertFalse(tree.lookup("H").isMarked);
+		assertFalse(tree.lookup("D").isMarked);
 		
 		
 	}
