@@ -89,7 +89,6 @@ public class proj2 {
 				case 3:
 					return combine + "great-grandparent";
 				default:
-					
 					return combine + getGreat(bDist) + "-grandparent";
 			}
 		} else if (aDist == 1) {
