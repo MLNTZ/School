@@ -77,7 +77,7 @@ public class MyTreeTest {
 		assertEquals(3, tree.heightDif("P", "D"));
 		
 		
-		tree.markAnsestors("W");
+		tree.markAncestors("W");
 		assertTrue(tree.lookup("W").isMarked);
 		assertTrue(tree.lookup("B").isMarked);
 		assertTrue(tree.lookup("H").isMarked);
@@ -91,11 +91,14 @@ public class MyTreeTest {
 		assertEquals(null, tree.getFirstCommonMarked("_"));
 		assertEquals("D", tree.getFirstCommonMarked("N"));
 		
-		tree.unmarkAnsestors("W");
+		tree.unmarkAncestors("W");
 		assertFalse(tree.lookup("W").isMarked);
 		assertFalse(tree.lookup("B").isMarked);
 		assertFalse(tree.lookup("H").isMarked);
 		assertFalse(tree.lookup("D").isMarked);
+		
+		
+		assertEquals("DHQBTCNGMWFXZRP", tree.levelOrder(tree.getRoot()));
 		
 		
 	}
@@ -138,6 +141,8 @@ public class MyTreeTest {
 		assertEquals(4, tree.getHeight("I"));
 		assertEquals(5, tree.getHeight("W"));
 		assertEquals(6, tree.getHeight("M"));
+		
+		assertEquals("ABQZCDREFSTIGUXJNHWVYKLMOP", tree.levelOrder(tree.getRoot()));
 	}
 	
 	

@@ -146,7 +146,7 @@ public class MyTree<E> {
 		return trav;
 	}
 	
-	public void markAnsestors(E obj) {
+	public void markAncestors(E obj) {
 		Tnode<E> temp = lookup(obj) ;
 		if (temp == null) {
 			throw new IllegalArgumentException("element does not exist");
@@ -154,8 +154,11 @@ public class MyTree<E> {
 		temp.markAncestors();
 		
 	}
-	
-	public void unmarkAnsestors(E obj) {
+	/**
+	 * will unmark all of the ancestors of the Node that contains the given object
+	 * @param obj
+	 */
+	public void unmarkAncestors(E obj) {
 		Tnode<E> temp = lookup(obj) ;
 		if (temp == null) {
 			throw new IllegalArgumentException("element does not exist");
@@ -163,7 +166,11 @@ public class MyTree<E> {
 		temp.unmarkAncestors();
 		
 	}
-	
+	/**
+	 * will search the ancestors of the node containing the given object and return the data contained in the first marked node found
+	 * @param obj the element to search up from
+	 * @return the element contained in the first marked node
+	 */
 	public E getFirstCommonMarked(E obj) {
 		Tnode<E> temp = lookup(obj);
 		if (temp == null) {
@@ -205,6 +212,33 @@ public class MyTree<E> {
 		}
 		trav += temp.data.toString();
 		return trav;
+	}
+	
+	
+	/**
+	 * will return the level order of this tree as a string
+	 * @param root the root to start with
+	 * @return the level order traversal
+	 */
+	public String levelOrder(Tnode<E> root) {
+		LinkedList<Tnode<E>> queue = new LinkedList<>();
+		String s = "";
+		if (root == null) {
+			return null;
+		}
+		
+		queue.add(root);
+		s += root.data.toString();
+		while(queue.size() != 0) {
+			Tnode<E> temp = queue.get(0);
+			queue.remove(0);
+			for(int i = 0; i < temp.getNumChild(); i++) {
+				Tnode<E> child = temp.getChild(i);
+				s += child.data.toString();
+				queue.add(child);
+			}
+		}
+		return s;
 	}
 	
 	

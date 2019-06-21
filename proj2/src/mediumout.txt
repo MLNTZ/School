@@ -1,0 +1,6 @@
+D is H's parent.
+W is T's niece/nephew.
+N is F's 1th cousin 1 times removed.
+B is N's 1th cousin 0 times removed.
+X is D's great grandchild.
+D, H, Q, B, T, C, N, G, M, W, F, X, Z, R, P.

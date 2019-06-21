@@ -14,7 +14,6 @@ class LinkedListTest {
 	
 	@Test
 	void testLinkedList() {
-		MyTree<String> tree = new MyTree<String>("a");
 		list = new LinkedList<>();
 		
 		list.addToFront("a");
