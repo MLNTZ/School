@@ -1,0 +1,17 @@
+A is P's great great great great-grandparent.
+P is A's great great great great grandchild.
+K is V's 4th cousin 1 times removed.
+V is K's 4th cousin 1 times removed.
+J is X's 3th cousin 1 times removed.
+X is J's 3th cousin 1 times removed.
+D is E's parent.
+E is D's child.
+C is Z's niece/nephew.
+Z is C's aunt/uncle.
+I is Z's great great-niece/nephew.
+Z is I's great great-aunt/uncle.
+M is Z's great great great great-niece/nephew.
+Z is M's great great great great-aunt/uncle.
+B is W's great great great-aunt/uncle.
+W is B's great great great-niece/nephew.
+A, B, Q, Z, C, D, R, E, F, S, T, I, G, U, X, J, N, H, W, V, Y, K, L, M, O, P.

@@ -1,0 +1,20 @@
+< A, B, C, D, E, I, J, K, L, M, F, G, N, O, H, P, Q, R, S, U, W, V, T, X, Y, Z.
+> C, K, L, M, J, I, E, O, N, P, H, G, F, D, B, W, V, U, S, Y, X, T, R, Q, Z, A.
+?  A, P.
+?  P, A.
+? K, V.
+? V, K.
+? J, X.
+?  X, J.
+?  D, E.
+? E, D.
+? C, Z.
+? Z, C.
+?  I, Z.
+?  Z, I.
+? M, Z.
+? Z, M.
+? B, W.
+? W, B.
+
+
