@@ -113,6 +113,7 @@ class EdgeHeapTest {
 		assertEquals(9, heap2.getMin().getWeight());
 		assertEquals("[10]", heap2.printArray());
 		assertEquals(10, heap2.getMin().getWeight());
+		assertEquals(0, heap2.size);
 		
 	}
 	
@@ -131,7 +132,7 @@ class EdgeHeapTest {
 		
 		
 		assertEquals("[5, 7, 6, 12, 10, 14]", heap.printArray());
-	
+		
 		
 	}
 

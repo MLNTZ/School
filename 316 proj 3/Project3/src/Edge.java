@@ -1,12 +1,17 @@
-
+import java.util.Comparator;
+/**
+ * will represent an edge in a graph
+ * @author hmintz Hunter Mintz
+ *
+ */
 public class Edge {
 	private int vertex1;
 	private int vertex2;
-	private int weight;
+	private double weight;
 	private Edge next;
 	
 	
-	public Edge(int v1, int v2, int weight) {
+	public Edge(int v1, int v2, double weight) {
 		vertex1 = v1;
 		vertex2 = v2;
 		this.weight = weight;
@@ -28,7 +33,7 @@ public class Edge {
 	 * 		  -1 if this goes before that
 	 * 			0 if equal;
 	 */
-	public int compareTo(Edge that) {
+	public int compareWeight(Edge that) {
 		if (that == null) {
 			return 1;
 		}
@@ -53,7 +58,7 @@ public class Edge {
 	public void setVertex2(int vertex2) {
 		this.vertex2 = vertex2;
 	}
-	public int getWeight() {
+	public double getWeight() {
 		return weight;
 	}
 	public void setWeight(int weight) {
@@ -65,12 +70,45 @@ public class Edge {
 	public void setNext(Edge next) {
 		this.next = next;
 	}
-	
+	/**
+	 * will print this edge to match formating for output
+	 */
 	public String toString() {
 		String s = "";
+		if (vertex1 > vertex2) {
+			s += String.format("%4s", vertex2);
+			s += " ";
+			s += String.format("%4s", vertex1);
+			return s;
+		}
 		s += String.format("%4s", vertex1);
+		s += " ";
 		s += String.format("%4s", vertex2);
 		return s;
 	}
+	/**
+	 * will sort edges lexicographic order
+	 */
+	public static Comparator<Edge> edgeSort = new Comparator<Edge>() {
+
+		@Override
+		public int compare(Edge a, Edge b) {
+			int amin = Math.min(a.getVertex1(), a.getVertex2());
+			int aMax = Math.max(a.getVertex1(), a.getVertex2());
+			int bmin = Math.min(b.getVertex1(), b.getVertex2());
+			int bMax = Math.max(b.getVertex1(), b.getVertex2());
+			if (amin < bmin) {
+				return - 1;
+			} else if (bmin < amin) {
+				return 1;
+			}
+			if (aMax < bMax) {
+				return -1;
+			} else if (bMax < aMax) {
+				return 1;
+			}
+			return 0;
+		}
+	};
 	
 }

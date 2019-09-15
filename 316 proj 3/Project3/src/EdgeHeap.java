@@ -1,8 +1,12 @@
 
-
+/**
+ * minimum heap of edges will sort them by weight
+ * @author mehun
+ *
+ */
 public class EdgeHeap {
 	private Edge[] heap;
-	private int size;
+	public int size;
 	private int capacity;
 	
 
@@ -68,7 +72,7 @@ public class EdgeHeap {
 	 * will change the heap so that the element at pos  maintains the heap property
 	 * @param pos
 	 */
-	public void heapify(int pos) {
+	public void minHeap(int pos) {
 		if (size == 0) {
 			return;
 		}
@@ -76,13 +80,13 @@ public class EdgeHeap {
 		Edge left = heap[getLeftChild(pos)];
 		Edge right = heap[getRightChild(pos)];
 		if (!isLeaf(pos)) {
-			if(tmp.compareTo(left) == 1 || tmp.compareTo(right) == 1) {
-				if(left.compareTo(right) == -1) {
-					swapEdge(pos, getLeftChild(pos));
-					heapify(getLeftChild(pos));
-				} else {
+			if(tmp.compareWeight(left) == 1 || tmp.compareWeight(right) == 1) {
+				if(right.compareWeight(left) == -1) {
 					swapEdge(pos, getRightChild(pos));
-					heapify(getRightChild(pos));
+					minHeap(getRightChild(pos));
+				} else {
+					swapEdge(pos, getLeftChild(pos));
+					minHeap(getLeftChild(pos));
 				}
 			}
 		}
@@ -101,34 +105,31 @@ public class EdgeHeap {
 		heap[size] = e;
 		int temp = size;
 		
-		while (heap[temp].compareTo(heap[getParent(temp)]) == -1) {
+		while (heap[temp].compareWeight(heap[getParent(temp)]) == -1) {
 			swapEdge(temp, getParent(temp));
 			temp = getParent(temp);
 		}
 	}
 	/**
-	 * will build the heap from the current heap array to have properties of heap
+	 * will return the minimum element in heap and remove it from the heap
 	 */
-	public void makeHeap() {
-		for (int current = (size / 2); current >= 1; current--) {
-			heapify(current);
-		}
-	}
-	
 	public Edge getMin() {
 		Edge ret = heap[1];
 		heap[1] = heap[size];
 		size--;
-		heapify(1);
+		minHeap(1);
 		return ret;
 	}
 	
-	
+	/**
+	 * will print out the heap array for testing
+	 * @return
+	 */
 	public String printArray() {
 		String s = "[";
 		
 		for (int i = 1; i <= size; i++) {
-			s += heap[i].getWeight();
+			s += (int) heap[i].getWeight() / (int) 1;
 			if (i != size) {
 				s += ", ";
 			} else {
@@ -136,6 +137,10 @@ public class EdgeHeap {
 			}
 		}
 		return s;
+	}
+	
+	public Edge[] getArray() {
+		return heap;
 	}
 	
 	
