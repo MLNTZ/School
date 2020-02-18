@@ -56,14 +56,15 @@ def contE(v5, splitVal):
 
 
 def read(file):
-   f = open(file)
-   r = csv.reader(f);
-   ret = []
-   for i in r:
-       ret.append(i)
+    f = open(file)
+    r = csv.reader(f);
+    ret = []
+    for i in r:
+          ret.append(i)
 
-   ret.remove(ret[0])
-   return ret;
+    ret.remove(ret[0])
+     return ret;
+
 
 def getBranch(data, val):
     ret = []
@@ -72,6 +73,7 @@ def getBranch(data, val):
             if col == val:
                 ret.append(row)
     return ret;
+
 
 def getMult(data, **vals):
     cpy = data.copy()
@@ -126,7 +128,7 @@ println(data)
 
 
 
-
+;
 
 
 
