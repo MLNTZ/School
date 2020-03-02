@@ -2,14 +2,17 @@ import json
 locations = []
 obsticals = []
 knightLoc = PVector()
+target = PVector()
 graph = []
 
 def setup():
     size(640, 480)
     frameRate(60)
-    global knightLoc, obsticals, locations, graph
+    global knightLoc, obsticals, locations, graph, target
     knightLoc, locations, obsticals = readShapes();
     graph = createGraph()
+    target = PVector(334, 116)
+    find(graph , knightLoc, target)
 
 def draw():
 
@@ -93,3 +96,47 @@ def readShapes():
         obsticals.append([str(val), points])
 
     return knight, key_locations, obsticals
+
+
+    
+
+
+def find(graph, start, target):
+path = []
+loc = start
+bestDir = PVector()
+bestPoint = loc
+surround = getSurround(loc)
+legal = []
+for point in surround:
+    newLoc = PVector(int(point.x), int(point.y))
+    if graph.get(newLoc.x, newLoc.y) == 0:
+        legal.append(point)
+        lastDist = PVector.dist(loc, target)
+        nextDist = PVector.dist(newLoc, target)
+        if (nextDist < lastDist):
+            bestPoint = newLoc
+    
+    
+    
+
+
+
+def getSurround(pos):
+    speed = 5
+    ret = []
+    ret.append(PVector.add(pos, PVector(1, -1).setMag(speed)))
+    ret.append(PVector.add(pos,PVector(0, 1).setMag(speed)))
+    ret.append(PVector.add(pos,PVector(-1, 0).setMag(speed)))
+    ret.append(PVector.add(pos,PVector(1, 0).setMag(speed)))
+    ret.append(PVector.add(pos,PVector(-1, -1).setMag(speed)))
+    ret.append(PVector.add(pos,PVector(-1, 1).setMag(speed)))
+    ret.append(PVector.add(pos,PVector(1, -1).setMag(speed)))
+    ret.append(PVector.add(pos,PVector(1, 1).setMag(speed)))
+    for pl in ret:
+        if pl.x > width or pl.x < 0 or pl.y > height or pl.y < 0:
+            ret.remove(pl)
+            
+    return ret
+            
+            
