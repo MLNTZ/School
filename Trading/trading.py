@@ -1,30 +1,26 @@
 from __future__ import print_function
 import matplotlib.pyplot as plt
 from matplotlib import style
-import yfinance as yf
 import pandas as pd
-from pandas_datareader import data as pdr
 from alpha_vantage.timeseries import TimeSeries as AV
 from alpha_vantage.techindicators import TechIndicators as TI
-from yahoo_fin.stock_info import *
-
-
 from backtesting import Backtest, Strategy
 from backtesting.lib import crossover
 from backtesting.test import SMA, GOOG
 from backtesting.lib import SignalStrategy, TrailingStrategy
-from backtesting.test import GOOG
-
+from backtesting.test import GOOG;
 import pyalgotrade
 from pyalgotrade import strategy
 from pyalgotrade.barfeed.csvfeed import GenericBarFeed
 from pyalgotrade.technical import ma
+from pyalgotrade.technical import cross
 from pyalgotrade.bar import Frequency
-
-
-
+from pyalgotrade import plotter
+from pyalgotrade.stratanalyzer import returns
 import datetime
 import time
+from finta import TA
+
 ## 1. open 2. high 3. low 4. close 5.volume
 
 
@@ -137,12 +133,30 @@ def run_graphed_backtest(oof):
     output = bt.run()
     print(output)
     bt.plot()
+#data = get_daily(symbol="AMZN")
+data = get_intraday(symbol="AMZN", interval="5min")
 
-data = get_intraday()
-data = filterByTimeIndex(data, month=3)
-data = convert_for_backtest(data)
-data.to_csv("back.csv")
-# run_graphed_backtest(data)
+
+
+# data = convert_for_backtest(data)
+# data.to_csv("back.csv")
+run_graphed_backtest(data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class MyStrategy(strategy.BacktestingStrategy):
     def __init__(self, feed, instrument, smaPeriod):
@@ -150,6 +164,8 @@ class MyStrategy(strategy.BacktestingStrategy):
         self.__position = None
         self.__instrument = instrument
         self.__sma = ma.SMA(feed[instrument].getPriceDataSeries(), smaPeriod)
+        self.__fiftyema = ma.EMA(feed[instrument].getPriceDataSeries(), 5)
+        self.__twohunnyema = ma.EMA(feed[instrument].getPriceDataSeries(), 20)
 
     def onEnterOk(self, position):
         execInfo = position.getEntryOrder().getExecutionInfo()
@@ -169,18 +185,32 @@ class MyStrategy(strategy.BacktestingStrategy):
 
     def onBars(self, bars):
         # Wait for enough bars to be available to calculate a SMA.
-        if self.__sma[-1] is None:
+        if self.__fiftyema[-1] is None or self.__twohunnyema[-1] is None:
             return
-
         bar = bars[self.__instrument]
         # If a position was not opened, check if we should enter a long position.
         if self.__position is None:
-            if bar.getPrice() > self.__sma[-1]:
-                # Enter a buy market order for 10 shares. The order is good till canceled.
-                self.__position = self.enterLong(self.__instrument, 10, True)
+            if cross.cross_above(self.__fiftyema, self.__twohunnyema):
+                self.__position = self.enterShort(self.__instrument, 1, True)
+            elif cross.cross_below(self.__fiftyema, self.__twohunnyema):
+                self.__position = self.enterLong(self.__instrument, 1, True)
+        elif self.__position.getShares() > 0:
+            if cross.cross_below(self.__fiftyema, self.__twohunnyema):
+                self.__position.exitMarket()
+        elif self.__position.getShares() < 0:
+            if cross.cross_above(self.__fiftyema, self.__twohunnyema):
+                self.__position.exitMarket()
+
         # Check if we have to exit the position.
         elif bar.getPrice() < self.__sma[-1] and not self.__position.exitActive():
             self.__position.exitMarket()
+
+    def getSMA(self):
+        return self.__sma
+    def get50EMA(self):
+        return self.__fiftyema
+    def get200EMA(self):
+        return self.__twohunnyema
 
 
 def run_strategy(smaPeriod):
@@ -189,11 +219,35 @@ def run_strategy(smaPeriod):
     feed.addBarsFromCSV("price", "back.csv")
     # Evaluate the strategy with the feed.
     myStrategy = MyStrategy(feed, "price", smaPeriod)
+    # Attach a returns analyzers to the strategy.
+    returnsAnalyzer = returns.Returns()
+    myStrategy.attachAnalyzer(returnsAnalyzer)
+
+    # Attach the plotter to the strategy.
+    plt = plotter.StrategyPlotter(myStrategy)
+    # Include the SMA in the instrument's subplot to get it displayed along with the closing prices.
+    plt.getInstrumentSubplot("price").addDataSeries("FIFTY", myStrategy.get50EMA())
+    plt.getInstrumentSubplot("price").addDataSeries("2 HUNDRED", myStrategy.get200EMA())
+    # Plot the simple returns on each bar.
     myStrategy.run()
     print("Final portfolio value: $%.2f" % myStrategy.getBroker().getEquity())
+    return plt, myStrategy.getBroker().getEquity()
 
+#
+# plt, eq = run_strategy(30)
+# plt.plot(fromDateTime=datetime.datetime(2020, 1, 1))
 
-run_strategy(15)
+# highest = 0
+# val = 0;
+# for i in range(5,400, 5):
+#     plt, eq = run_strategy(i)
+#     if (eq > highest):
+#         highest = eq
+#         val = i
+#
+#
+# print(highest, "     ", val)
+
 # data = get_intraday()
 # data['ma1'] = calc_sma(data, window=200)
 # data['ma2'] = calc_sma(data, window=45)
@@ -217,9 +271,9 @@ run_strategy(15)
 # crosses = locate_crosses(data['ma1'], data['ma2'])
 
 
-
-
-
+#
+#
+#
 # plot the pricing data
 # ax1 = plt.subplot2grid((5,1), (0,0), rowspan=5, colspan=1)
 # ax1.plot(data.index, data['4. close'], label='Gold Price')
@@ -231,11 +285,11 @@ run_strategy(15)
 # ax1.plot(data.index, data['100ma'])
 #
 # ax2.plot(data.index, d'a'ta['5. volume'])
-
+#
 # plt.show()
 #
-#track()
-
-
+# track()
+#
+#
 
 
