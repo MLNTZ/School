@@ -33,7 +33,7 @@ def setup():
     frameRate(60)
     global knightLoc, obsticals, locations, grid, target, searching, path
     found = False
-    knightLoc, locations, obsticals = readShapes("test3.json");
+    knightLoc, locations, obsticals, hasState, wantState = readShapes("test3.json");
     graph = createGraph()
     grid = Grid(width/ gridScale, height / gridScale)
     grid.fillObs(graph)
@@ -164,8 +164,20 @@ def readShapes(name):
         for point in ob:
             points.append(PVector(point[0], point[1]))
         obsticals.append([str(val), points])
-
-    return knight, key_locations, obsticals
+        
+        
+    hasState = []
+    wantState = []
+    
+    world = data.get("state_of_world")
+    for el in world["Has"]:
+        ar = [str(el[0]), str(el[1])]
+        hasState.append(ar)
+        
+    for el in world["Wants"]:
+        ar = [str(el[0]), str(el[1])]
+        wantState.append(ar)
+    return knight, key_locations, obsticals, hasState, wantState
 
 
 
