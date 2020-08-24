@@ -3,6 +3,7 @@ from array import *
 import Queue as queue
 import heapq
 import collections
+import random
 locations = []
 obsticals = []
 knightLoc = PVector()
@@ -12,6 +13,8 @@ path = {}
 searching = False
 trail = []
 gridScale = 6
+currentAction = None
+kingGold = None
 
 
 class PriorityQueue:
@@ -31,12 +34,19 @@ class PriorityQueue:
 def setup():
     size(640, 480)
     frameRate(60)
-    global knightLoc, obsticals, locations, grid, target, searching, path
+    global knightLoc, obsticals, locations, grid, target, searching, path, hasState, wantState, actions, knightInv, currentAction, kingGold
     found = False
-    knightLoc, locations, obsticals, hasState, wantState = readShapes("test3.json");
+    knightLoc, locations, obsticals, hasState, wantState, kingGold = readShapes("test3.json");
     graph = createGraph()
     grid = Grid(width/ gridScale, height / gridScale)
     grid.fillObs(graph)
+    knightInv = [0]
+    searching = False
+    currentAction = None
+    
+    
+    dc = decisionMaker(hasState, wantState)
+    actions = dc.generate_plan()
    
 
     # kn = grid.grab(knightLoc.x, knightLoc.y)
@@ -44,8 +54,20 @@ def setup():
     # for i in n:
     #     i.colSwap()
 
-def mouseClicked():
-    target = PVector(mouseX, mouseY)
+def move_to(pl):
+    if(pl == "inkeeper"):
+        loc = "tavern"
+    elif (pl == "blacksmith"):
+        loc = "forge"
+        
+    elif (pl == "lady lupa"):
+        loc = "cave"
+    else:
+        loc = pl    
+    target = None
+    for i in locations:
+        if (i[0] == loc):
+            target = PVector(i[1], i[2])
     global searching, trail
     searching = True
     path, cost = find(grid, knightLoc, target)
@@ -55,20 +77,86 @@ def mouseClicked():
     else : trail = build_path(grid, path, knightLoc, target)
 
 def draw():
-    global knightLoc
+    global knightLoc, currentAction
     background(255)
     
     drawLocs()
     drawObs()
     drawKnight()
     # grid.drawGrid()
-
+   
+    
     if (searching and len(trail) > 0):
         next = trail[0]
         trail.remove(next)
         if (len(trail) == 0):                
             found = False
         knightLoc = next.topLeft
+    else : 
+         
+         if (currentAction == "Greet King"):
+            print("The knight greets the king and is given: ", kingGold, "gold") 
+            knightInv[0] = knightInv[0] + kingGold
+         if (len(actions) != 0):
+            winCon = actions[len(actions) - 1]
+            ac = actions[0]
+            currentAction = ac
+            actions.remove(ac)
+            if (ac == "have gold"):
+                if(knightInv[0] == 0):
+                    move_to('castle')
+                    currentAction = "Greet King"
+
+            elif "travel" in ac:
+               loc = ac[10:]
+               move_to(loc)
+               
+            elif("get" in ac or "buy" in ac):
+                if "axe" in ac:
+                    print("The knight purchases a rusty axe from the blacksmith")
+                    knightInv.append("axe")
+                    knightInv[0] = knightInv[0] - 1                    
+                elif "ale" in ac:
+                   print("The knight purchases a pint of ale from the Innkeeper")
+                   knightInv.append("ale")
+                   knightInv[0] = knightInv[0] - 1  
+                   
+                elif "water" in ac:
+                   print("The knight purchases a glass of water from the Innkeeper")
+                   knightInv.append("water")
+                   knightInv[0] = knightInv[0] - 1 
+                elif "blade" in ac:
+                   print("The Knight purchases a rusty blade from the blacksmith")
+                   knightInv.append("blade")
+                   knightInv[0] = knightInv[0] - 1 
+            elif("use" in ac or "Give" in ac):
+                if("axe" in ac and "axe" in knightInv):
+                   print("The Knight obtains wood from the Tree using an axe")
+                   knightInv.append("wood")
+                if "water" in ac:
+                    print("The knight obtains Wolfsbane by giving the tree water")
+                    knightInv.remove("water")
+                if "wolfsbane" in ac:
+                    print("The knight trades wolfsbane for Frenrir with lady lupa")    
+                   
+            else:
+                if len(actions) == 1:
+                    winCon == actions[0]
+                    if (winCon == 'Fire'):
+                        print("The knight is prepared to fight Ramses with Fire")
+                    if (winCon == 'Fenrir'):
+                        print("The knight is prepared to fight Ramses with Fenrir")
+                    if (winCon == 'Poisened Sword'):
+                        print("The knight is prepared to fight Ramses a poisoned sword")
+                    if (winCon == 'Poisened Fenrir'):
+                        print("The knight is prepared to fight Ramses a poisoned fenrir")
+                        
+                    move_to("tar_pit")
+                    
+               
+               
+                
+            
         
 
     
@@ -177,7 +265,10 @@ def readShapes(name):
     for el in world["Wants"]:
         ar = [str(el[0]), str(el[1])]
         wantState.append(ar)
-    return knight, key_locations, obsticals, hasState, wantState
+        
+        
+    kinggold = int(data.get("greet_king"))
+    return knight, key_locations, obsticals, hasState, wantState, kinggold
 
 
 
@@ -218,7 +309,6 @@ def find(grid, start, target):
                     front.put(next, prio)
                     path[next] = cur;   
     if targBlock not in path:
-        print('oof')
         return None, None
         
     return path, cost
@@ -328,5 +418,152 @@ class Block():
         
         return ret;
         
+        
+        
+
+
+class decisionMaker:
+    
+    has = None;
+    want = None;
+    greetKing = True;
+    knightInv = []
+    primaryWinConditions = ["Fire", "Fenrir", "Poisened Sword", "Poisened Fenrir"]
+    def __init__(self, has, want):
+        self.has = has
+        self.want = want
+        
+    def can_fill(self, desire):
+        if(desire == "Wood"):
+            return self.can_fill("Axe")
+        if(desire == "Sword"):
+            return self.can_fill("Blade") and self.can_fill("Wood")
+        else: chek = desire
+        for el in self.has:
+            if(el[0] == chek or el[1] == chek):
+                return True
+        return False
+            
+    def fill(self, desire):
+        steps = [desire]
+        step = None
+        if desire == "Ale":
+            step = self.fill("buy ale from inkeeper")
+        if desire == "Wood":
+            step = self.fill("use axe on Tree Sprit")
+        if desire == "Wolfsbane":
+            step = self.fill("use water on Tree Spirit")
+        if desire == "Sword":
+           step = self.fill("cobmine blade and wood")
+        if desire == "Fenrir":
+            step = self.fill("Give wolfsbane to Lady Lupa")
+            
+        if desire == ("buy ale from inkeeper"):
+            step = ["have gold", "travel to tavern"]
+            step = step[::-1]
+        if desire == ("use axe on Tree Sprit"):
+            step = [self.fill("get axe"), "travel to tree"]
+            step = step[::-1]
+        if desire == "use water on Tree Spirit":
+            step = [self.fill("buy water from inkeeper"), "travel to tree"]
+            step = step[::-1]
+        if desire == "Give wolfsbane to Lady Lupa":
+            step = [self.fill("use water on Tree Spirit"), "travel to lady lupa"]
+            step = step[::-1]
+        if desire == "cobmine blade and wood":
+            step = [self.fill("get blade"), self.fill("get wood")]
+            
+        if desire == "get blade":
+            step = ["have gold", "travel to blacksmith"]
+            step = step[::-1]
+        if desire == "get wood":
+            step = self.fill("use axe on Tree Sprit")
+        
+        if desire == "buy water from inkeeper":
+            step = ["have gold", "travel to inkeeper"]
+            step = step[::-1]
+        if desire == "get axe":
+            step = ["have gold", "travel to blacksmith"]
+            step = step[::-1]
+        
+        steps.append(step)
+        return steps
+    
+    #will generate a plan to execute based on a randomly selected win condition
+    def generate_plan(self):
+        win = False
+        desire = []
+        targetWin = None
+        steps = []
+        while(not win and len(self.primaryWinConditions) > 0):
+            win = True
+            targ = random.randint(0, len(self.primaryWinConditions) - 1)
+            targetWin = self.primaryWinConditions[targ]
+            self.primaryWinConditions.remove(targetWin)
+            
+            if(targetWin == "Fire"):
+                desire = ["Ale", "Wood"]
+            if(targetWin == "Fenrir"):
+                desire  =["Fenrir"]
+            if(targetWin == "Poisened Sword"):
+                desire = ["Sword", "Wolfsbane"]
+            if(targetWin == "Poisened Fenrir"):
+                desire = ["Fenrir", "Wolfsbane"]
+                
+                
+            for des in desire:
+                if not self.can_fill(des):
+                    win = False
+                
+        steps.append(targetWin)
+        
+        for des in desire:
+            desSteps = self.fill(des)
+            steps.append(desSteps)
+    
+        trail = []
+                    
+        for i in steps:
+            if (type(i) == str):
+                trail.insert(0, i)
+            else:
+                for j in i:
+                    if (type(j) == str):
+                        trail.insert(0, j)
+                        
+                    else:
+                        for k in j:
+                            if (type(k) == str):
+                                trail.insert(0, k)
+                            else:
+                                for f in k:
+                                    if (type(f) == str):
+                                        trail.insert(0, f)
+                                    else:
+                                        for g in f:
+                                            if (type(g) == str):
+                                                trail.insert(0, g)
+                                            else:
+                                                for h in g:
+                                                    if(type(h) == str):
+                                                      trail.insert(0, h)
+                                                    else :
+                                                        for p in h:
+                                                            if (type(p) == str):
+                                                               trail.insert(0, p)
+                                                            else:
+                                                                for q in p:
+                                                                    if(type(q) == str):
+                                                                        trail.insert(0, q)
+                                                                    else:
+                                                                        for z in q:
+                                                                            trail.insert(0, z)
+                                                                    
+        print(trail)                                      
+        return trail
                 
             
+                
+                
+    
+        
